@@ -1,2 +1,2 @@
 # eCommerce
-.NET 5 and Angular
+.NET 6 and Angular
