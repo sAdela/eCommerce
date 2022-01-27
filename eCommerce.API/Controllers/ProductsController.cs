@@ -1,5 +1,6 @@
 ﻿using eCommerce.Core.Entities;
 using eCommerce.Core.Interfaces;
+using eCommerce.Core.Specifications;
 using eCommerce.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,23 +11,46 @@ namespace eCommerce.API.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly IProductRepository _repository;
-        public ProductsController(IProductRepository repository)
+        private readonly IGenericRepository<Product> _productsRepo;
+        private readonly IGenericRepository<ProductBrand> _productBrandRepo;
+        private readonly IGenericRepository<ProductType> _productTypeRepo;
+
+        public ProductsController(IGenericRepository<Product> productsRepo,
+            IGenericRepository<ProductBrand> productBrandRepo, IGenericRepository<ProductType> productTypeRepo)
         {
-            _repository = repository;
+            _productsRepo = productsRepo;
+            _productBrandRepo = productBrandRepo;
+            _productTypeRepo = productTypeRepo;
         }
 
         [HttpGet]
         public async Task<ActionResult<List<Product>>> GetProducts()
         {
-            var products = await _repository.GetProductsAsync();
+            var spec = new ProductsWithTypesAndBrandsSpecification();
+
+            var products = await _productsRepo.ListAsync(spec);
             return Ok(products);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            return await _repository.GetProductByIdAsync(id);
+            var spec = new ProductsWithTypesAndBrandsSpecification(id);
+
+            var product = await _productsRepo.GetEntityWithSpec(spec);
+            return Ok(product);
+        }
+
+        [HttpGet("brands")]
+        public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
+        {
+            return Ok(await _productBrandRepo.ListAllAsync());
+        }
+
+        [HttpGet("types")]
+        public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
+        {
+            return Ok(await _productTypeRepo.ListAllAsync());
         }
     }
 }
