@@ -1,3 +1,4 @@
+using eCommerce.API.Helpers;
 using eCommerce.Core.Interfaces;
 using eCommerce.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ namespace API
             services.AddDbContext<StoreContext>(opt => opt.UseSqlServer(_configuration.GetConnectionString("DefaultConnection")));
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped(typeof(IGenericRepository<>), (typeof(GenericRepository<>)));
-
+            services.AddAutoMapper(typeof(MappingProfiles));
             
             services.AddSwaggerGen(c =>
             {
@@ -43,6 +44,8 @@ namespace API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseStaticFiles();
 
             app.UseAuthorization();
 
